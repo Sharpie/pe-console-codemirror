@@ -53,6 +53,19 @@
     });
   }
 
+  function reactToParameterAdd(node, codeMirror) {
+    let button = node.parentElement.parentElement.getElementsByTagName("button")[0];
+
+    button.addEventListener("click", function(){
+      // Clearing the CodeMirror will also cause the textarea to be cleared.
+      // Schedule for the next animation frame so that this happens after
+      // Ember has finished adding the new data.
+      window.requestAnimationFrame(function() {
+        codeMirror.setValue("");
+      });
+    });
+  }
+
   function initCodeMirror(node) {
     let codeMirror = CodeMirror.fromTextArea(node, {
       mode: "application/json",
@@ -79,6 +92,7 @@
     let codeMirror = initCodeMirror(node);
 
     reactToParameterSelection(node, codeMirror);
+    reactToParameterAdd(node,codeMirror);
   }
 
   function initEditParameter(node) {
