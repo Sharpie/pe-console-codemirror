@@ -67,12 +67,16 @@
     });
   }
 
-  function initCodeMirror(node) {
+  function initCodeMirror(node, prettyPrintExisting = false) {
     let codeMirror = CodeMirror.fromTextArea(node, {
       mode: "application/json",
       lineNumbers: true,
       readOnly: (node.disabled ? "nocursor" : false)
     });
+
+    if (prettyPrintExisting) {
+      codeMirror.setValue(JSON.stringify(JSON.parse(node.value), undefined, 2));
+    }
 
     codeMirrorReplacements.set(node, codeMirror);
 
@@ -97,7 +101,7 @@
   }
 
   function initEditParameter(node) {
-    let codeMirror = initCodeMirror(node);
+    let codeMirror = initCodeMirror(node, true);
   }
 
   const documentBodyObserver = new MutationObserver(mutations => {
