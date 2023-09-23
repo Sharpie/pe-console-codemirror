@@ -53,23 +53,7 @@
     });
   }
 
-  function reactToParameterAdd(node, codeMirror) {
-    let button = node.parentElement.parentElement.getElementsByTagName("button")[0];
-
-    button.addEventListener("mousedown", function(){
-      node.value = codeMirror.getValue();
-
-      // We have to fire an input event so that Ember recognizes the change.
-      let textFieldUpdate = new Event("input");
-      node.dispatchEvent(textFieldUpdate);
-
-      codeMirror.setValue("");
-    });
-  }
-
   function initCodeMirror(node) {
-    if (codeMirrorReplacements.has(node)) return;
-
     let codeMirror = CodeMirror.fromTextArea(node, {
       mode: "application/json",
       lineNumbers: true,
@@ -77,16 +61,41 @@
     });
 
     codeMirrorReplacements.set(node, codeMirror);
-    reactToParameterSelection(node, codeMirror);
-    reactToParameterAdd(node, codeMirror);
+
     enableDisableObserver.observe(node, {attributeFilter: ["disabled"]});
+
+    // Sync CodeMirror state back to underlying textarea after user
+    // input and fire events so that Ember reacts appropriately.
+    codeMirror.on("change", function() {
+      let inputEvent = new Event("input");
+      node.value = codeMirror.getValue();
+      node.dispatchEvent(inputEvent);
+    });
+
+    return codeMirror;
+  }
+
+  function initAddParameter(node) {
+    let codeMirror = initCodeMirror(node);
+
+    reactToParameterSelection(node, codeMirror);
+  }
+
+  function initEditParameter(node) {
+    let codeMirror = initCodeMirror(node);
   }
 
   const documentBodyObserver = new MutationObserver(mutations => {
     for (let mutation of mutations) {
       for (let node of mutation.addedNodes) {
         if (!(node instanceof HTMLTextAreaElement)) continue;
-        if (node.matches('textarea[class*="class-param-add-value"]')) initCodeMirror(node);
+        if (codeMirrorReplacements.has(node)) continue;
+
+        if (node.matches('textarea[class*="class-param-add-value"]')) {
+          initAddParameter(node);
+        } else if (node.matches('td[class*="class-param-value"] textarea')) {
+          initEditParameter(node);
+        }
       }
     }
   });
