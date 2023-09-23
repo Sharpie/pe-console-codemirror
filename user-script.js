@@ -3,7 +3,11 @@
 // @version  0.1
 // @require  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js
 // @require  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js
+// @require  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldcode.min.js
+// @require  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/brace-fold.min.js
+// @require  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.min.js
 // @resource codemirror.css https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css
+// @resource foldgutter.css https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/addon/fold/foldgutter.min.css
 // @grant    GM.getResourceUrl
 // @include  https://*.delivery.puppetlabs.net/*
 // @include  https://*.vmpooler-prod.puppet.net/*
@@ -12,15 +16,18 @@
 
 (function() {
   function initCodeMirrorCSS() {
-    GM.getResourceUrl("codemirror.css").then(value => {
-      let cm_css = document.createElement("link");
+    let addCss = function(value) {
+      let newCss = document.createElement("link");
 
-      cm_css.type = "text/css";
-      cm_css.rel = "stylesheet";
-      cm_css.href = value;
+      newCss.type = "text/css";
+      newCss.rel = "stylesheet";
+      newCss.href = value;
 
-      document.head.appendChild(cm_css);
-    });
+      document.head.appendChild(newCss);
+    }
+
+    GM.getResourceUrl("codemirror.css").then(addCss);
+    GM.getResourceUrl("foldgutter.css").then(addCss);
   }
 
   const codeMirrorReplacements = new Map();
@@ -71,6 +78,8 @@
     let codeMirror = CodeMirror.fromTextArea(node, {
       mode: "application/json",
       lineNumbers: true,
+      foldGutter: true,
+      gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
       readOnly: (node.disabled ? "nocursor" : false)
     });
 
