@@ -53,6 +53,20 @@
     });
   }
 
+  function reactToParameterAdd(node, codeMirror) {
+    let button = node.parentElement.parentElement.getElementsByTagName("button")[0];
+
+    button.addEventListener("mousedown", function(){
+      node.value = codeMirror.getValue();
+
+      // We have to fire an input event so that Ember recognizes the change.
+      let textFieldUpdate = new Event("input");
+      node.dispatchEvent(textFieldUpdate);
+
+      codeMirror.setValue("");
+    });
+  }
+
   function initCodeMirror(node) {
     if (codeMirrorReplacements.has(node)) return;
 
@@ -64,6 +78,7 @@
 
     codeMirrorReplacements.set(node, codeMirror);
     reactToParameterSelection(node, codeMirror);
+    reactToParameterAdd(node, codeMirror);
     enableDisableObserver.observe(node, {attributeFilter: ["disabled"]});
   }
 
