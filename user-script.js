@@ -6,6 +6,7 @@
 // @resource codemirror.css https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css
 // @grant    GM.getResourceUrl
 // @include  https://*.delivery.puppetlabs.net/*
+// @include  https://*.vmpooler-prod.puppet.net/*
 // @run-at   document-start
 // ==/UserScript==
 
