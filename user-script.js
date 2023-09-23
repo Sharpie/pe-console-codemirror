@@ -3,20 +3,23 @@
 // @version  0.1
 // @require  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js
 // @require  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/javascript/javascript.min.js
-// @grant    none
+// @resource codemirror.css https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css
+// @grant    GM.getResourceUrl
 // @include  https://*.delivery.puppetlabs.net/*
 // @run-at   document-start
 // ==/UserScript==
 
 (function() {
   function initCodeMirrorCSS() {
-    let cm_css = document.createElement("link");
+    GM.getResourceUrl("codemirror.css").then(value => {
+      let cm_css = document.createElement("link");
 
-    cm_css.type = "text/css";
-    cm_css.rel = "stylesheet";
-    cm_css.href = "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css";
+      cm_css.type = "text/css";
+      cm_css.rel = "stylesheet";
+      cm_css.href = value;
 
-    document.head.appendChild(cm_css);
+      document.head.appendChild(cm_css);
+    });
   }
 
   function initTextareaObservers() {
