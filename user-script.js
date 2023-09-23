@@ -22,35 +22,35 @@
     });
   }
 
-  function initTextareaObservers() {
-    let observer = new MutationObserver(mutations => {
+  const codeMirrorReplacements = new Set();
 
-      for(let mutation of mutations) {
-        // examine new nodes, is there anything to highlight?
+  function initCodeMirror(node) {
+    if (codeMirrorReplacements.has(node)) return;
 
-        for(let node of mutation.addedNodes) {
-          // we track only elements, skip other nodes (e.g. text nodes)
-          if (!(node instanceof HTMLElement)) continue;
-
-          // check the inserted element for being a code snippet
-          if (node.matches('textarea[class*="class-param-add-value"]')) {
-            node.value = "hello, world"
-
-            CodeMirror.fromTextArea(node, {
-              mode: "application/json",
-              lineNumbers: true
-            });
-          }
-        }
-      }
-
+    CodeMirror.fromTextArea(node, {
+      mode: "application/json",
+      lineNumbers: true,
+      readOnly: (node.disabled ? "nocursor" : false)
     });
 
-    observer.observe(document.body, {childList: true, subtree: true});
+    codeMirrorReplacements.add(node);
+  }
+
+  const documentBodyObserver = new MutationObserver(mutations => {
+    for (let mutation of mutations) {
+      for (let node of mutation.addedNodes) {
+        if (!(node instanceof HTMLTextAreaElement)) continue;
+        if (node.matches('textarea[class*="class-param-add-value"]')) initCodeMirror(node);
+      }
+    }
+  });
+
+  function watchDocumentBody() {
+    documentBodyObserver.observe(document.body, {childList: true, subtree: true});
   }
 
   addEventListener("DOMContentLoaded", function(){
     initCodeMirrorCSS();
-    initTextareaObservers();
+    watchDocumentBody();
   });
 })();
