@@ -22,18 +22,49 @@
     });
   }
 
-  const codeMirrorReplacements = new Set();
+  const codeMirrorReplacements = new Map();
+
+  const enableDisableObserver = new MutationObserver(mutations => {
+    for (let mutation of mutations) {
+      let node = mutation.target;
+      let codeMirror = codeMirrorReplacements.get(node);
+
+      codeMirror.setOption("readOnly", (node.disabled ? "nocursor" : false));
+    }
+  });
+
+  function reactToParameterSelection(node, codeMirror) {
+    // This one is a bit tricky. MutationObserver does not get events for
+    // when the value of input fields is modified by other JavaScript code
+    // or user actions.
+    //
+    // So, we add an event listener on the class parameter selector to
+    // update CodeMirror with new defaults if a user selects a parameter.
+    let selector = node.parentElement.parentElement.getElementsByTagName("select")[0];
+    let updateCodeMirror = function() {
+      codeMirror.setValue(node.value);
+    }
+
+    selector.addEventListener("change", function(){
+      // Do the update on the next animation frame as the actual change
+      // to the textinput value usually occurs just after this event
+      // fires.
+      window.requestAnimationFrame(updateCodeMirror);
+    });
+  }
 
   function initCodeMirror(node) {
     if (codeMirrorReplacements.has(node)) return;
 
-    CodeMirror.fromTextArea(node, {
+    let codeMirror = CodeMirror.fromTextArea(node, {
       mode: "application/json",
       lineNumbers: true,
       readOnly: (node.disabled ? "nocursor" : false)
     });
 
-    codeMirrorReplacements.add(node);
+    codeMirrorReplacements.set(node, codeMirror);
+    reactToParameterSelection(node, codeMirror);
+    enableDisableObserver.observe(node, {attributeFilter: ["disabled"]});
   }
 
   const documentBodyObserver = new MutationObserver(mutations => {
