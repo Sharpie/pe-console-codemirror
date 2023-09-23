@@ -101,8 +101,21 @@
 
     // Sync CodeMirror state back to underlying textarea after user
     // input and fire events so that Ember reacts appropriately.
-    codeMirror.on("change", function() {
+    codeMirror.on("update", function() {
       let inputEvent = new Event("input");
+
+      try {
+        JSON.parse(codeMirror.getValue());
+      } catch (e) {
+        // Don't sync malformed JSON back to the Classifier.
+        // This is different from PE's normal behavior where
+        // anything unparsable is just cast to a string.
+        //
+        // This change prevents a JSON oopsie from auto-promoting
+        // to something that can fail puppet agent runs.
+        return;
+      }
+
       node.value = codeMirror.getValue();
       node.dispatchEvent(inputEvent);
     });
